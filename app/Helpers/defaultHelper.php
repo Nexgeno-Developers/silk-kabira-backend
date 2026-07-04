@@ -228,18 +228,18 @@ if (!function_exists('getPostLayoutConfig')) {
                             //     'placeholder' => 'Optional subtitle',
                             //     'rules' => 'nullable|string|max:255',
                             // ],
-                            [
-                                'key' => 'date',
-                                'label' => 'Date',
-                                'type' => 'date',
-                                'rules' => 'nullable|date_format:Y-m-d',
-                            ],
-                            [
-                                'key' => 'time',
-                                'label' => 'Time',
-                                'type' => 'time',
-                                'rules' => 'nullable|date_format:H:i',
-                            ],
+                            // [
+                            //     'key' => 'date',
+                            //     'label' => 'Date',
+                            //     'type' => 'date',
+                            //     'rules' => 'nullable|date_format:Y-m-d',
+                            // ],
+                            // [
+                            //     'key' => 'time',
+                            //     'label' => 'Time',
+                            //     'type' => 'time',
+                            //     'rules' => 'nullable|date_format:H:i',
+                            // ],
                             [
                                 'key' => 'summary',
                                 'label' => 'Summary',
@@ -255,33 +255,33 @@ if (!function_exists('getPostLayoutConfig')) {
                             // ],
                         ],
                     ],
-                    [
-                        'title' => 'Right Side Blocks',
-                        'fields' => [
-                            [
-                                'key' => 'right_side_blocks',
-                                'label' => 'Right Side Blocks',
-                                'type' => 'repeater',
-                                'item_label' => 'Block',
-                                'rules' => 'nullable|array',
-                                'fields' => [
-                                    [
-                                        'key' => 'image',
-                                        'label' => 'Image',
-                                        'type' => 'image',
-                                        'rules' => 'nullable|string',
-                                    ],
-                                    [
-                                        'key' => 'url',
-                                        'label' => 'URL',
-                                        'type' => 'text',
-                                        'placeholder' => 'https://',
-                                        'rules' => 'nullable|string|max:500',
-                                    ],
-                                ],
-                            ],
-                        ],
-                    ],
+                    // [
+                    //     'title' => 'Right Side Blocks',
+                    //     'fields' => [
+                    //         [
+                    //             'key' => 'right_side_blocks',
+                    //             'label' => 'Right Side Blocks',
+                    //             'type' => 'repeater',
+                    //             'item_label' => 'Block',
+                    //             'rules' => 'nullable|array',
+                    //             'fields' => [
+                    //                 [
+                    //                     'key' => 'image',
+                    //                     'label' => 'Image',
+                    //                     'type' => 'image',
+                    //                     'rules' => 'nullable|string',
+                    //                 ],
+                    //                 [
+                    //                     'key' => 'url',
+                    //                     'label' => 'URL',
+                    //                     'type' => 'text',
+                    //                     'placeholder' => 'https://',
+                    //                     'rules' => 'nullable|string|max:500',
+                    //                 ],
+                    //             ],
+                    //         ],
+                    //     ],
+                    // ],
                 ],
             ],
         ];

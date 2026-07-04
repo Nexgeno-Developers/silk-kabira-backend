@@ -229,104 +229,73 @@ class PageController extends Controller
             $additionalParams = explode(',', $additionalParams);
             
             foreach($additionalParams as $param):
-                if($param === 'services') {
-                    $ids = Page::query()->whereIn('layout', ['marketing_services', 'technical_services'])->where('is_active', true)->pluck('id')->toArray();
-                    $autofetchSections['services'] = page_details_from_ids($ids);
-                }
+                // if($param === 'services') {
+                //     $ids = Page::query()->whereIn('layout', ['marketing_services', 'technical_services'])->where('is_active', true)->pluck('id')->toArray();
+                //     $autofetchSections['services'] = page_details_from_ids($ids);
+                // }
 
-                if($param === 'industries') {
-                    $ids = Page::query()->whereIn('layout', ['product_industry_detail'])->where('is_active', true)->pluck('id')->toArray();
-                    $autofetchSections['industries'] = page_details_from_ids($ids);
-                }                
+                // if($param === 'industries') {
+                //     $ids = Page::query()->whereIn('layout', ['product_industry_detail'])->where('is_active', true)->pluck('id')->toArray();
+                //     $autofetchSections['industries'] = page_details_from_ids($ids);
+                // }                
 
-                if($param === 'sustainabilities') {
-                    $ids = Page::query()->whereIn('layout', ['sustainability_1', 'sustainability_2', 'sustainability_3','sustainability_4','sustainability_5','sustainability_6'])->where('is_active', true)->pluck('id')->toArray();
-                    $autofetchSections['sustainabilities'] = page_details_from_ids($ids);
-                }                
+                // if($param === 'sustainabilities') {
+                //     $ids = Page::query()->whereIn('layout', ['sustainability_1', 'sustainability_2', 'sustainability_3','sustainability_4','sustainability_5','sustainability_6'])->where('is_active', true)->pluck('id')->toArray();
+                //     $autofetchSections['sustainabilities'] = page_details_from_ids($ids);
+                // }                
 
-                if($param === 'product_categories') {
-                    $ids = Page::query()->whereIn('layout', ['product_category_detail_1','product_category_detail_2','product_category_detail_3','product_category_detail_4','product_category_detail_5'])->where('is_active', true)->pluck('id')->toArray();
-                    $autofetchSections['product_categories'] = page_details_from_ids($ids);
-                }   
+                // if($param === 'product_categories') {
+                //     $ids = Page::query()->whereIn('layout', ['product_category_detail_1','product_category_detail_2','product_category_detail_3','product_category_detail_4','product_category_detail_5'])->where('is_active', true)->pluck('id')->toArray();
+                //     $autofetchSections['product_categories'] = page_details_from_ids($ids);
+                // }   
                 
                 if($param === 'related_products') {
-                    $currentPageId = $page->id;
-                    $currentPageLayout = $page->layout;
-                    $ids = Page::query()->whereIn('layout', ['products'])->where('is_active', true)
-                        // ->whereHas('meta', function ($q) use ($currentPageLayout) {
-                        //     $q->where('meta_key', 'relation_category')
-                        //     ->where('meta_value', $currentPageLayout);
-                        // })
-                        ->pluck('id')->toArray();
+                    $ids = $this->getRelatedProductIdsByOccasions($page);
                     $autofetchSections['related_products'] = page_details_from_ids($ids);
                 }    
 
-                if($param === 'sustainable_products') {
-                    $ids = Page::query()->whereIn('layout', ['products'])->where('is_active', true)
-                        ->whereHas('meta', function ($q) {
-                            $q->where('meta_key', 'relation_category')
-                            ->where('meta_value', 17); // Assuming 17 is the ID for the sustainable category
-                        })->pluck('id')->toArray();
-                    $autofetchSections['sustainable_products'] = page_details_from_ids($ids);
-                }     
+                // if($param === 'sustainable_products') {
+                //     $ids = Page::query()->whereIn('layout', ['products'])->where('is_active', true)
+                //         ->whereHas('meta', function ($q) {
+                //             $q->where('meta_key', 'relation_category')
+                //             ->where('meta_value', 17); // Assuming 17 is the ID for the sustainable category
+                //         })->pluck('id')->toArray();
+                //     $autofetchSections['sustainable_products'] = page_details_from_ids($ids);
+                // }     
                 
-                if($param === 'lamistraw_products') {
-                    $ids = Page::query()->whereIn('layout', ['products'])->where('is_active', true)
-                        ->whereHas('meta', function ($q) {
-                            $q->where('meta_key', 'relation_category')
-                            ->where('meta_value', 7); // Assuming 6 is the ID for the lamistraw category
-                        })->pluck('id')->toArray();
-                    $autofetchSections['lamistraw_products'] = page_details_from_ids($ids);
-                }                 
+                // if($param === 'lamistraw_products') {
+                //     $ids = Page::query()->whereIn('layout', ['products'])->where('is_active', true)
+                //         ->whereHas('meta', function ($q) {
+                //             $q->where('meta_key', 'relation_category')
+                //             ->where('meta_value', 7); // Assuming 6 is the ID for the lamistraw category
+                //         })->pluck('id')->toArray();
+                //     $autofetchSections['lamistraw_products'] = page_details_from_ids($ids);
+                // }                 
 
-                if($param === 'featured_products') {
-                    $ids = Page::query()->whereIn('layout', ['products'])->where('is_active', true)
-                            ->whereHas('meta', function ($q) {
-                                $q->where('meta_key', 'relation_featured')
-                                ->where('meta_value', 'yes');
-                            })->pluck('id')->toArray();
-                    $autofetchSections['featured_products'] = page_details_from_ids($ids);
-                }  
+                // if($param === 'featured_products') {
+                //     $ids = Page::query()->whereIn('layout', ['products'])->where('is_active', true)
+                //             ->whereHas('meta', function ($q) {
+                //                 $q->where('meta_key', 'relation_featured')
+                //                 ->where('meta_value', 'yes');
+                //             })->pluck('id')->toArray();
+                //     $autofetchSections['featured_products'] = page_details_from_ids($ids);
+                // }  
                 
-                if ($param === 'standard_products') {
-                    $currentPageId = $page->id;
-
-                    $ids = Page::query()
-                        ->whereIn('layout', ['products'])
-                        ->where('is_active', 1)
-                        ->whereHas('meta', function ($q) use ($currentPageId) {
-                            $q->where('meta_key', 'relation_category')
-                            ->where('meta_value', $currentPageId);
-                        })
-                        ->whereHas('meta', function ($q) {
-                            $q->where('meta_key', 'relation_type')
-                            ->where('meta_value', 'standard');
-                        })
-                        ->pluck('id')
-                        ->toArray();
-
-                    $autofetchSections['standard_products'] = page_details_from_ids($ids);
-                } 
+                // if ($param === 'standard_products') {
+                //     // Backward-compatibility alias for older consumers.
+                //     $ids = $this->getProductIdsByType('Best Seller', $page);
+                //     $autofetchSections['standard_products'] = page_details_from_ids($ids);
+                // } 
                 
                 if ($param === 'premium_products') {
-                    $currentPageId = $page->id;
-
-                    $ids = Page::query()
-                        ->whereIn('layout', ['products'])
-                        ->where('is_active', 1)
-                        ->whereHas('meta', function ($q) use ($currentPageId) {
-                            $q->where('meta_key', 'relation_category')
-                            ->where('meta_value', $currentPageId);
-                        })
-                        ->whereHas('meta', function ($q) {
-                            $q->where('meta_key', 'relation_type')
-                            ->where('meta_value', 'premium');
-                        })
-                        ->pluck('id')
-                        ->toArray();
-
+                    $ids = $this->getProductIdsByType('Premium', $page);
                     $autofetchSections['premium_products'] = page_details_from_ids($ids);
-                }                
+                }
+
+                if ($param === 'best_seller_products') {
+                    $ids = $this->getProductIdsByType('Best Seller', $page);
+                    $autofetchSections['best_seller_products'] = page_details_from_ids($ids);
+                }
                 
                 if($param === 'latest_insights') {
                     $categoryId = 1;
@@ -499,5 +468,90 @@ class PageController extends Controller
         }
 
         return $decoded;
+    }
+
+    private function getProductIdsByType(string $type, Page $page): array
+    {
+        return Page::query()
+            ->with('meta')
+            ->where('layout', 'products')
+            ->where('is_active', true)
+            ->when($page->company_id, function ($query) use ($page) {
+                $query->where('company_id', $page->company_id);
+            })
+            ->whereHas('meta', function ($query) use ($type) {
+                $query->where('meta_key', 'type')
+                    ->where('meta_value', $type);
+            })
+            ->pluck('id')
+            ->toArray();
+    }
+
+    private function getRelatedProductIdsByOccasions(Page $page): array
+    {
+        $currentOccasions = $this->normalizedMetaList(
+            $page->meta->firstWhere('meta_key', 'occasions')?->meta_value
+        );
+
+        if ($currentOccasions === []) {
+            return [];
+        }
+
+        $currentOccasions = array_map('mb_strtolower', $currentOccasions);
+
+        return Page::query()
+            ->with('meta')
+            ->where('layout', 'products')
+            ->where('is_active', true)
+            ->where('id', '!=', $page->id)
+            ->when($page->company_id, function ($query) use ($page) {
+                $query->where('company_id', $page->company_id);
+            })
+            ->get()
+            ->filter(function (Page $product) use ($currentOccasions) {
+                $productOccasions = $this->normalizedMetaList(
+                    $product->meta->firstWhere('meta_key', 'occasions')?->meta_value
+                );
+
+                if ($productOccasions === []) {
+                    return false;
+                }
+
+                $productOccasions = array_map('mb_strtolower', $productOccasions);
+
+                return array_intersect($currentOccasions, $productOccasions) !== [];
+            })
+            ->pluck('id')
+            ->values()
+            ->all();
+    }
+
+    private function normalizedMetaList($rawValue): array
+    {
+        if (!filled($rawValue)) {
+            return [];
+        }
+
+        $decoded = json_decode($rawValue, true);
+
+        if (is_array($decoded)) {
+            return collect($decoded)
+                ->map(function ($item) {
+                    if (is_array($item)) {
+                        return trim((string) ($item['value'] ?? ''));
+                    }
+
+                    return trim((string) $item);
+                })
+                ->filter()
+                ->values()
+                ->all();
+        }
+
+        return collect(explode(',', (string) $rawValue))
+            ->map(fn ($item) => trim($item))
+            ->filter()
+            ->values()
+            ->all();
     }
 }
