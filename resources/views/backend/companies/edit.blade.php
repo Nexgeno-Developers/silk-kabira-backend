@@ -27,18 +27,6 @@
                         <input type="text" id="company-name" name="name" value="{{ old('name', $pageData->name) }}" class="form-control" placeholder="e.g : Sample Company" required>
                     </div>
                     <div class="mb-2 form-group clearfix">
-                        <label for="company-logo" class="form-label">{{ __('Breadcrumb') }} <span class="text-danger">*</span></label>
-                        <div class="input-group" data-toggle="aizuploader" data-type="image" data-multiple="false">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text bg-soft-secondary font-weight-medium">{{ __('Browse') }}</div>
-                            </div>
-                            <div class="form-control file-amount">{{ __('Choose File') }}</div>
-                            <input type="hidden" id="company-breadcrumb" name="meta[breadcrumb]" value="{{ old('meta.breadcrumb', $pageData->meta->where('meta_key', 'breadcrumb')->first()->meta_value ?? '') }}" class="selected-files" required>
-                        </div>
-                        <div class="file-preview box sm"></div>
-                    </div>  
-                    <div class="clearfix"></div>                   
-                    <div class="mb-2 form-group clearfix">
                         <label for="company-logo" class="form-label">{{ __('Logo') }} <span class="text-danger">*</span></label>
                         <div class="input-group" data-toggle="aizuploader" data-type="image" data-multiple="false">
                             <div class="input-group-prepend">
@@ -51,25 +39,6 @@
                     </div>     
                     <div class="clearfix"></div>               
 
-                    <div class="mb-2 form-group clearfix">
-                        <label for="company-footer-logo" class="form-label">{{ __('Footer Logo Image') }}</label>
-                        <div class="input-group" data-toggle="aizuploader" data-type="image" data-multiple="false">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text bg-soft-secondary font-weight-medium">{{ __('Browse') }}</div>
-                            </div>
-                            <div class="form-control file-amount">{{ __('Choose File') }}</div>
-                            <input
-                                type="hidden"
-                                id="company-footer-logo"
-                                name="footer_logo_image"
-                                value="{{ old('footer_logo_image', $pageData->footer_logo_image) }}"
-                                class="selected-files"
-                            >
-                        </div>
-                        <div class="file-preview box sm"></div>
-                    </div>
-                    <div class="clearfix"></div>
-
                     <div class="mb-3 form-group">
                         <label for="company-short-description" class="form-label">{{ __('Short Description') }}</label>
                         <textarea
@@ -77,28 +46,29 @@
                             name="short_description"
                             class="form-control"
                             rows="3"
+                            placeholder="Short company summary for footer or profile sections"
                         >{{ old('short_description', $pageData->short_description) }}</textarea>
+                    </div>
+
+                    <div class="mb-3 form-group">
+                        <label for="company-copyright-text" class="form-label">Copyright Text</label>
+                        <input type="text" id="company-copyright-text" name="copyright_text" value="{{ old('copyright_text', $pageData->copyright_text) }}" class="form-control" placeholder="Copyright 2026 Your Company. All rights reserved.">
                     </div>
 
                     <div class="mb-3 mt-1 form-group">
                         <label for="company-website" class="form-label">Website <span class="text-danger">*</span></label>
-                        <input type="url" id="company-website" name="website" value="{{ $pageData->website }}" class="form-control" placeholder="" required>
+                        <input type="url" id="company-website" name="website" value="{{ old('website', $pageData->website) }}" class="form-control" placeholder="https://example.com" required>
                     </div>  
                     
                     <div class="mb-3 form-group">
-                        <label for="company-google-map" class="form-label">{{ __('Map') }}</label>
-                        <div class="input-group" data-toggle="aizuploader" data-type="image" data-multiple="false">
-                            <div class="input-group-prepend">
-                                <div class="input-group-text bg-soft-secondary font-weight-medium">{{ __('Browse') }}</div>
-                            </div>
-                            <div class="form-control file-amount">{{ __('Choose File') }}</div>
-                            <input type="hidden"
-                                   id="company-google-map"
-                                   name="google_map"
-                                   value="{{ $pageData->google_map }}"
-                                   class="selected-files">
-                        </div>
-                        <div class="file-preview box sm"></div>
+                        <label for="company-google-map" class="form-label">{{ __('Map URL') }}</label>
+                        <input type="url"
+                               id="company-google-map"
+                               name="google_map"
+                               value="{{ old('google_map', $pageData->google_map) }}"
+                               class="form-control"
+                               placeholder="https://maps.google.com/...">
+                        <small class="text-muted">Paste the public Google Maps share or embed URL.</small>
                     </div>
 
                     <div class="mb-3 form-group">
@@ -108,15 +78,20 @@
                     
                     <div class="mb-3 form-group">
                         <label for="company-phone" class="form-label">Phone <span class="text-danger">*</span></label>
-                        <input type="text" id="company-phone" name="phone" value="{{ old('phone', $pageData->phone) }}" class="form-control" placeholder="" required>
-                    </div>                    
-
-                    <div class="mb-3 form-group">
-                        <label for="company-email" class="form-label">Enquiry Email <span class="text-danger">*</span></label>
-                        <input type="email" id="company-email" name="email" value="{{ old('email', $pageData->email) }}" class="form-control" placeholder="" required>
+                        <input type="text" id="company-phone" name="phone" value="{{ old('phone', $pageData->phone) }}" class="form-control" placeholder="+91 98765 43210" required>
                     </div>
 
                     <div class="mb-3 form-group">
+                        <label for="company-whatsapp" class="form-label">WhatsApp No</label>
+                        <input type="text" id="company-whatsapp" name="whatsapp" value="{{ old('whatsapp', $pageData->whatsapp) }}" class="form-control" placeholder="+91 98765 43210">
+                    </div>                    
+
+                    <div class="mb-3 form-group">
+                        <label for="company-email" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" id="company-email" name="email" value="{{ old('email', $pageData->email) }}" class="form-control" placeholder="info@example.com" required>
+                    </div>
+
+                    {{-- <div class="mb-3 form-group">
                         <label for="company-sales-partnership-email" class="form-label">Sales &amp; Partnership Email</label>
                         <input type="email"
                                id="company-sales-partnership-email"
@@ -124,9 +99,9 @@
                                value="{{ old('meta.sales_partner_email', $pageData->meta->where('meta_key', 'sales_partner_email')->first()->meta_value ?? '') }}"
                                class="form-control"
                                placeholder="">
-                    </div>
+                    </div> --}}
 
-                    <div class="mb-3 form-group">
+                    {{-- <div class="mb-3 form-group">
                         <label for="company-technical-support-email" class="form-label">Technical Support Email</label>
                         <input type="email"
                                id="company-technical-support-email"
@@ -134,9 +109,9 @@
                                value="{{ old('meta.technical_support_email', $pageData->meta->where('meta_key', 'technical_support_email')->first()->meta_value ?? '') }}"
                                class="form-control"
                                placeholder="">
-                    </div>
+                    </div> --}}
 
-                    <div class="mb-3 form-group">
+                    {{-- <div class="mb-3 form-group">
                         <label for="company-careers-email" class="form-label">Careers Email</label>
                         <input type="email"
                                id="company-careers-email"
@@ -144,7 +119,7 @@
                                value="{{ old('meta.careers_email', $pageData->meta->where('meta_key', 'careers_email')->first()->meta_value ?? '') }}"
                                class="form-control"
                                placeholder="">
-                    </div>
+                    </div> --}}
 
                 </div>
             </div>
@@ -156,6 +131,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="text-uppercase mt-0 mb-3 bg-light p-2">Social Links</h5>
+                    <p class="text-muted mb-3">Add only full public profile URLs for the channels you want to show.</p>
                     <div class="mb-3 form-group">
                         <label for="meta-instagram" class="form-label">Instagram URL</label>
                         <input type="url" class="form-control" id="meta-instagram" name="meta[instagram_url]" value="{{ old('meta.instagram_url', $pageData->meta->where('meta_key', 'instagram_url')->first()->meta_value ?? '') }}" placeholder="Enter Instagram URL">
@@ -164,10 +140,10 @@
                         <label for="meta-x" class="form-label">X URL</label>
                         <input type="url" class="form-control" id="meta-x" name="meta[x_url]" value="{{ old('meta.x_url', $pageData->meta->where('meta_key', 'x_url')->first()->meta_value ?? '') }}" placeholder="Enter X URL">
                     </div>
-                    <div class="mb-3 form-group">
+                    {{-- <div class="mb-3 form-group">
                         <label for="meta-linkedin" class="form-label">LinkedIn URL</label>
                         <input type="url" class="form-control" id="meta-linkedin" name="meta[linkedin_url]" value="{{ old('meta.linkedin_url', $pageData->meta->where('meta_key', 'linkedin_url')->first()->meta_value ?? '') }}" placeholder="Enter LinkedIn URL">
-                    </div>
+                    </div> --}}
                     <div class="mb-3 form-group">
                         <label for="meta-facebook" class="form-label">Facebook URL</label>
                         <input type="url" class="form-control" id="meta-facebook" name="meta[facebook_url]" value="{{ old('meta.facebook_url', $pageData->meta->where('meta_key', 'facebook_url')->first()->meta_value ?? '') }}" placeholder="Enter Facebook URL">
@@ -176,17 +152,36 @@
                         <label for="meta-youtube" class="form-label">YouTube URL</label>
                         <input type="url" class="form-control" id="meta-youtube" name="meta[youtube_url]" value="{{ old('meta.youtube_url', $pageData->meta->where('meta_key', 'youtube_url')->first()->meta_value ?? '') }}" placeholder="Enter YouTube URL">
                     </div>
-                    <div class="mb-3 form-group">
+                    <div class="mb-0 form-group">
+                        <label for="meta-pinterest" class="form-label">Pinterest URL</label>
+                        <input type="url" class="form-control" id="meta-pinterest" name="meta[pinterest_url]" value="{{ old('meta.pinterest_url', $pageData->meta->where('meta_key', 'pinterest_url')->first()->meta_value ?? '') }}" placeholder="Enter Pinterest URL">
+                    </div>
+                    {{-- <div class="mb-3 form-group">
                         <label for="meta-tiktok" class="form-label">TikTok URL</label>
                         <input type="url" class="form-control" id="meta-tiktok" name="meta[tiktok_url]" value="{{ old('meta.tiktok_url', $pageData->meta->where('meta_key', 'tiktok_url')->first()->meta_value ?? '') }}" placeholder="Enter TikTok URL">
-                    </div>
-                    <div class="mb-3 form-group">
+                    </div> --}}
+                    {{-- <div class="mb-3 form-group">
                         <label for="meta-vimeo" class="form-label">Vimeo URL</label>
                         <input type="url" class="form-control" id="meta-vimeo" name="meta[vimeo_url]" value="{{ old('meta.vimeo_url', $pageData->meta->where('meta_key', 'vimeo_url')->first()->meta_value ?? '') }}" placeholder="Enter Vimeo URL">
-                    </div>
+                    </div> --}}
                 </div>
             </div>
 
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="text-uppercase mt-0 mb-3 bg-light p-2">Bottom CTA</h5>
+                    {{-- <p class="text-muted mb-3">Use this content for the final call-to-action section shown near the bottom of the site.</p> --}}
+                    <div class="mb-3 form-group">
+                        <label for="company-cta-title" class="form-label">CTA Title</label>
+                        <input type="text" id="company-cta-title" name="cta_title" value="{{ old('cta_title', $pageData->cta_title) }}" class="form-control" placeholder="Ready to work with our team?">
+                    </div>
+                    <div class="mb-0 form-group">
+                        <label for="company-cta-subtitle" class="form-label">CTA Subtitle</label>
+                        <textarea id="company-cta-subtitle" name="cta_subtitle" class="form-control" rows="3" placeholder="Add supporting text for the CTA section">{{ old('cta_subtitle', $pageData->cta_subtitle) }}</textarea>
+                    </div>
+                </div>
+            </div>
+            
             <!-- SEO -->
             {{-- <div class="card">
                 <div class="card-body">

@@ -19,22 +19,16 @@ class CompanySeeder extends Seeder
             [
                 'name' => '{Company}',
                 'phone' => '02134567890',
+                'whatsapp' => '919876543210',
                 'address' => 'Head Office, Mumbai, India',
                 'website' => 'https://example.com',
                 'google_map' => '',
+                'copyright_text' => 'Copyright 2026 Example. All rights reserved.',
+                'cta_title' => 'Start your next project with us',
+                'cta_subtitle' => 'Speak with our team for tailored solutions and quick support.',
                 'is_active' => 1,
             ],
         );
 
-        // Optional: a single meta record for the company
-        CompanyMeta::firstOrCreate(
-            [
-                'company_id' => $company->id,
-                'meta_key' => 'support_email',
-            ],
-            [
-                'meta_value' => 'support@example.com',
-            ],
-        );
     }
 }

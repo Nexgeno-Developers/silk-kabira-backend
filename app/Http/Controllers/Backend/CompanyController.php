@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\Company;
 use App\Services\ApiPayloadCache;
 
@@ -53,32 +54,15 @@ class CompanyController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $company = Company::create([
-                'name' => $request->input('name'),
-                'logo' => $request->input('logo'),
-                'footer_logo_image' => $request->input('footer_logo_image'),
-                'short_description' => $request->input('short_description'),
-                'email' => $request->input('email'),
-                'phone' => $request->input('phone'),
-                'address' => $request->input('address'),
-                'website' => $request->input('website'),
-                'google_map' => $request->input('google_map'),
-                'meta_title' => $request->input('meta_title'),
-                'meta_description' => $request->input('meta_description'),
-                'is_active' => $request->input('is_active', 1),
-            ]);
+        $validated = $request->validate($this->rules());
 
-            // Handle meta fields
-            $metaFields = $request->input('meta', []);
-            foreach ($metaFields as $key => $value) {
-                if (!empty($value)) {
-                    $company->meta()->create([
-                        'meta_key' => $key,
-                        'meta_value' => $value,
-                    ]);
-                }
-            }
+        try {
+            $company = DB::transaction(function () use ($validated) {
+                $company = Company::create($this->companyData($validated));
+                $this->syncMetaFields($company, $validated['meta'] ?? []);
+
+                return $company;
+            });
 
             ApiPayloadCache::invalidateCompany((int) $company->id);
 
@@ -123,44 +107,15 @@ class CompanyController extends Controller
      */
     public function update(Request $request, $id)
     {
-        try {     
-            $company = Company::findOrFail($id);
-        
-            // Update main company fields
-            // Use input defaults to avoid wiping existing values if a field isn't sent.
-            $company->name = $request->input('name', $company->name);
-            $company->logo = $request->input('logo', $company->logo);
-            $company->footer_logo_image = $request->input('footer_logo_image', $company->footer_logo_image);
-            $company->short_description = $request->input('short_description', $company->short_description);
-            $company->email = $request->input('email', $company->email);
-            $company->phone = $request->input('phone', $company->phone);
-            $company->address = $request->input('address', $company->address);
-            $company->website = $request->input('website', $company->website);
-            $company->google_map = $request->input('google_map', $company->google_map);
-            $company->meta_title = $request->input('meta_title', $company->meta_title);
-            $company->meta_description = $request->input('meta_description', $company->meta_description);
-            $company->save();
-        
-            // Handle meta fields
-            $metaFields = $request->input('meta', []); // Get all meta fields from the request
+        $validated = $request->validate($this->rules());
 
-            foreach ($metaFields as $key => $value) {
-                // Check if the meta key exists for the current company
-                $existingMeta = $company->meta()->where('meta_key', $key)->first();
-            
-                if ($existingMeta) {
-                    // If the meta key exists, update it regardless of $value being empty
-                    $existingMeta->update(['meta_value' => $value]);
-                } else {
-                    // If the meta key does not exist, create a new record only if $value is not empty
-                    if (!empty($value)) {
-                        $company->meta()->create([
-                            'meta_key' => $key,
-                            'meta_value' => $value
-                        ]);
-                    }
-                }
-            }            
+        try {
+            $company = Company::findOrFail($id);
+
+            DB::transaction(function () use ($company, $validated) {
+                $company->update($this->companyData($validated));
+                $this->syncMetaFields($company, $validated['meta'] ?? []);
+            });
 
             ApiPayloadCache::invalidateCompany((int) $company->id);
 
@@ -175,6 +130,73 @@ class CompanyController extends Controller
     
             // Optionally, return a failure message to the user
             return redirect()->route('companies.edit', $id)->with('error', 'There was an error updating the company details.');
+        }
+    }
+
+    private function rules(): array
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'logo' => 'required|string',
+            'short_description' => 'nullable|string',
+            'copyright_text' => 'nullable|string|max:500',
+            'cta_title' => 'nullable|string|max:255',
+            'cta_subtitle' => 'nullable|string|max:1000',
+            'email' => 'required|email:rfc|max:50',
+            'phone' => 'required|string|max:50',
+            'whatsapp' => 'nullable|string|max:50',
+            'address' => 'required|string',
+            'website' => 'required|url|max:50',
+            'google_map' => 'nullable|url|max:2000',
+            'meta_title' => 'nullable|string',
+            'meta_description' => 'nullable|string',
+            'is_active' => 'nullable|boolean',
+            'meta' => 'nullable|array',
+            'meta.instagram_url' => 'nullable|url|max:255',
+            'meta.x_url' => 'nullable|url|max:255',
+            'meta.facebook_url' => 'nullable|url|max:255',
+            'meta.youtube_url' => 'nullable|url|max:255',
+            'meta.pinterest_url' => 'nullable|url|max:255',
+        ];
+    }
+
+    private function companyData(array $validated): array
+    {
+        return [
+            'name' => $validated['name'],
+            'logo' => $validated['logo'],
+            'short_description' => $validated['short_description'] ?? null,
+            'copyright_text' => $validated['copyright_text'] ?? null,
+            'cta_title' => $validated['cta_title'] ?? null,
+            'cta_subtitle' => $validated['cta_subtitle'] ?? null,
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
+            'whatsapp' => $validated['whatsapp'] ?? null,
+            'address' => $validated['address'],
+            'website' => $validated['website'],
+            'google_map' => $validated['google_map'] ?? null,
+            'meta_title' => $validated['meta_title'] ?? null,
+            'meta_description' => $validated['meta_description'] ?? null,
+            'is_active' => (int) ($validated['is_active'] ?? 1),
+        ];
+    }
+
+    private function syncMetaFields(Company $company, array $metaFields): void
+    {
+        foreach ($metaFields as $key => $value) {
+            $existingMeta = $company->meta()->where('meta_key', $key)->first();
+
+            if ($existingMeta) {
+                $existingMeta->update(['meta_value' => $value]);
+                continue;
+            }
+
+            if ($value !== null && $value !== '') {
+                $company->meta()->create([
+                    'meta_key' => $key,
+                    'meta_value' => $value,
+                ]);
+            }
         }
     }
     

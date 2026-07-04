@@ -21,7 +21,6 @@ class CompanyController extends Controller
         'favicon',
         'og_image',
         'twitter_image',
-        'breadcrumb',
         'technical_experts_image',
     ];
 
@@ -86,21 +85,21 @@ class CompanyController extends Controller
     private function companyPayload(Company $company): array
     {
         $logo = uploaded_asset_details_from_ids($company->logo);
-        $footerLogo = uploaded_asset_details_from_ids($company->footer_logo_image);
-        $googleMap = uploaded_asset_details_from_ids($company->google_map);
 
         return [
             'id' => $company->id,
             'name' => $company->name,
             'logo' => $logo,
-            'footer_logo_image' => $footerLogo,
             'email' => $company->email,
             'phone' => $company->phone,
             'whatsapp' => $company->whatsapp,
             'address' => $company->address,
             'website' => $company->website,
-            'google_map' => $googleMap,
+            'google_map' => $company->google_map,
             'short_description' => $company->short_description,
+            'copyright_text' => $company->copyright_text,
+            'cta_title' => $company->cta_title,
+            'cta_subtitle' => $company->cta_subtitle,
             'meta_title' => $company->meta_title,
             'meta_description' => $company->meta_description,
             'is_active' => (bool) $company->is_active,
