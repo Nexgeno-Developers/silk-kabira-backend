@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Company;
-use App\Models\CompanyMeta;
 
 class CompanySeeder extends Seeder
 {
@@ -24,6 +23,8 @@ class CompanySeeder extends Seeder
                 'website' => 'https://example.com',
                 'google_map' => '',
                 'copyright_text' => 'Copyright 2026 Example. All rights reserved.',
+                'catalogue' => null,
+                'sample' => null,
                 'cta_title' => 'Start your next project with us',
                 'cta_subtitle' => 'Speak with our team for tailored solutions and quick support.',
                 'is_active' => 1,

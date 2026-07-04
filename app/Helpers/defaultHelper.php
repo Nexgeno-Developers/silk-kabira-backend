@@ -157,6 +157,36 @@ if (!function_exists('getPageLayouts')) {
                 'description' => 'Homepage layout for the website.',
             ],
 
+            'contact_us' => [
+                'label' => 'Contact Us',
+                'description' => 'Contact page layout with form and contact details.',
+            ],
+
+            'our_story' => [
+                'label' => 'Our Story',
+                'description' => 'Layout for the "Our Story" page, showcasing company history and milestones.',
+            ],
+
+            'wholesale' => [
+                'label' => 'Wholesale',
+                'description' => 'Layout for the "Wholesale" page, showcasing wholesale opportunities and terms.',
+            ],
+
+            'atelier' => [
+                'label' => 'Atelier',
+                'description' => 'Layout for the "Atelier" page, showcasing our creative space and services.',
+            ],
+
+            'collections' => [
+                'label' => 'Collections',
+                'description' => 'Layout for the "Collections" page, showcasing various product lines or themes.',
+            ],
+
+            'products' => [
+                'label' => 'Products',
+                'description' => 'Layout for the "Products" page, showcasing our product offerings.',
+            ],
+
         ];
 
         if ($only === null || $only === []) {

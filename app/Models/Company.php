@@ -10,6 +10,7 @@ class Company extends Model
         'name', 'logo', 'email', 'phone', 'whatsapp',
         'address', 'website', 'google_map', 'is_active',
         'short_description', 'copyright_text',
+        'catalogue', 'sample',
         'cta_title', 'cta_subtitle', 'meta_title', 'meta_description',
     ];
 

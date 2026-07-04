@@ -169,15 +169,38 @@
 
             <div class="card">
                 <div class="card-body">
-                    <h5 class="text-uppercase mt-0 mb-3 bg-light p-2">Bottom CTA</h5>
+                    <h5 class="text-uppercase mt-0 mb-3 bg-light p-2">Card Section</h5>
                     {{-- <p class="text-muted mb-3">Use this content for the final call-to-action section shown near the bottom of the site.</p> --}}
                     <div class="mb-3 form-group">
-                        <label for="company-cta-title" class="form-label">CTA Title</label>
+                        <label for="company-cta-title" class="form-label">Card Title</label>
                         <input type="text" id="company-cta-title" name="cta_title" value="{{ old('cta_title', $pageData->cta_title) }}" class="form-control" placeholder="Ready to work with our team?">
                     </div>
-                    <div class="mb-0 form-group">
-                        <label for="company-cta-subtitle" class="form-label">CTA Subtitle</label>
+                    <div class="mb-3 form-group">
+                        <label for="company-cta-subtitle" class="form-label">Card Subtitle</label>
                         <textarea id="company-cta-subtitle" name="cta_subtitle" class="form-control" rows="3" placeholder="Add supporting text for the CTA section">{{ old('cta_subtitle', $pageData->cta_subtitle) }}</textarea>
+                    </div>
+                    <div class="mb-3 form-group clearfix">
+                        <label for="company-catalogue" class="form-label">Catalogue</label>
+                        <div class="input-group" data-toggle="aizuploader" data-type="document" data-multiple="false">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text bg-soft-secondary font-weight-medium">{{ __('Browse') }}</div>
+                            </div>
+                            <div class="form-control file-amount">{{ __('Choose File') }}</div>
+                            <input type="hidden" id="company-catalogue" name="catalogue" value="{{ old('catalogue', $pageData->catalogue) }}" class="selected-files">
+                        </div>
+                        <div class="file-preview box sm"></div>
+                    </div>
+                    <div class="clearfix"></div>
+                    <div class="mb-0 form-group clearfix">
+                        <label for="company-sample" class="form-label">Sample</label>
+                        <div class="input-group" data-toggle="aizuploader" data-type="document" data-multiple="false">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text bg-soft-secondary font-weight-medium">{{ __('Browse') }}</div>
+                            </div>
+                            <div class="form-control file-amount">{{ __('Choose File') }}</div>
+                            <input type="hidden" id="company-sample" name="sample" value="{{ old('sample', $pageData->sample) }}" class="selected-files">
+                        </div>
+                        <div class="file-preview box sm"></div>
                     </div>
                 </div>
             </div>

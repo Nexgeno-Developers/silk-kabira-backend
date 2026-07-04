@@ -85,6 +85,12 @@ class CompanyController extends Controller
     private function companyPayload(Company $company): array
     {
         $logo = uploaded_asset_details_from_ids($company->logo);
+        $catalogue = filled($company->catalogue)
+            ? uploaded_asset_details_from_ids($company->catalogue)
+            : null;
+        $sample = filled($company->sample)
+            ? uploaded_asset_details_from_ids($company->sample)
+            : null;
 
         return [
             'id' => $company->id,
@@ -98,6 +104,8 @@ class CompanyController extends Controller
             'google_map' => $company->google_map,
             'short_description' => $company->short_description,
             'copyright_text' => $company->copyright_text,
+            'catalogue' => $catalogue,
+            'sample' => $sample,
             'cta_title' => $company->cta_title,
             'cta_subtitle' => $company->cta_subtitle,
             'meta_title' => $company->meta_title,
