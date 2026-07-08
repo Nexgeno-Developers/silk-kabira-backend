@@ -18,6 +18,7 @@ class ProtectForms
     {
         $userAgent = $request->header('User-Agent');
         $ip = $request->ip();
+        $isLocalEnvironment = app()->environment('local');
 
         // 🧱 1. Block empty User-Agent
         if (empty($userAgent)) {
@@ -26,11 +27,13 @@ class ProtectForms
         }
 
         // 🚫 2. Block known bad bots
-        $badAgents = ['curl', 'wget', 'python', 'bot', 'scrapy', 'PostmanRuntime'];
-        foreach ($badAgents as $bot) {
-            if (stripos($userAgent, $bot) !== false) {
-                \Log::warning("Bot User-Agent '$userAgent' blocked from: $ip");
-                abort(403, 'Forbidden - Bot Detected');
+        if (!$isLocalEnvironment) {
+            $badAgents = ['curl', 'wget', 'python', 'bot', 'scrapy', 'PostmanRuntime'];
+            foreach ($badAgents as $bot) {
+                if (stripos($userAgent, $bot) !== false) {
+                    \Log::warning("Bot User-Agent '$userAgent' blocked from: $ip");
+                    abort(403, 'Forbidden - Bot Detected');
+                }
             }
         }
 
