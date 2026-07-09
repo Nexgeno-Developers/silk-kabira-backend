@@ -38,6 +38,7 @@
 
     $selected_occasions = $normalizeTagValues($getMeta('occasions', ''));
 
+    $product_image = $getMeta('product_image');
     $sku = $getMeta('sku');
     $product_information_title = $getMeta('product_information_title');
     $description = $getMeta('description');
@@ -137,6 +138,20 @@
     <div class="col-md-6 form-group mb-2">
         <label class="form-label">SKU <span class="text-danger">*</span></label>
         <input type="text" class="form-control" name="meta[sku]" value="{{ $sku }}" placeholder="Enter SKU" required>
+    </div>
+
+    <div class="col-md-6">
+        <label class="form-label">Product Image <span class="text-danger">*</span></label>
+        <div class="form-group mb-2">
+            <div class="input-group" data-toggle="aizuploader" data-type="image" data-multiple="false">
+                <div class="input-group-prepend">
+                    <div class="input-group-text bg-soft-secondary font-weight-medium">{{ __('Browse') }}</div>
+                </div>
+                <div class="form-control file-amount">{{ __('Choose File') }}</div>
+                <input value="{{ $product_image }}" type="hidden" name="meta[product_image]" class="selected-files" required>
+            </div>
+            <div class="file-preview box sm"></div>
+        </div>
     </div>
 
     <div class="col-md-12 form-group mb-2">

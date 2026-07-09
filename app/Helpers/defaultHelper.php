@@ -945,7 +945,15 @@ if (!function_exists('page_details_from_ids')) {
         $pageIds = array_column($pages, 'id');
 
         // Fetch all relevant meta in one query
-        $metaKeys = ['short_summary_icon', 'short_summary_image', 'short_summary_title', 'short_summary_description', 'short_summary_video_url'];
+        $metaKeys = [
+            'short_summary_icon',
+            'short_summary_image',
+            'short_summary_title',
+            'short_summary_description',
+            'short_summary_video_url',
+            'sku',
+            'product_image',
+        ];
         $pageMetas = PageMeta::whereIn('page_id', $pageIds)
             ->whereIn('meta_key', $metaKeys)
             ->get()
@@ -965,6 +973,10 @@ if (!function_exists('page_details_from_ids')) {
                 $page['short_summary_image'] = uploaded_asset_details_from_ids($metaMap['short_summary_image']);
             }
 
+            if (!empty($metaMap['product_image'])) {
+                $page['product_image'] = uploaded_asset_details_from_ids($metaMap['product_image']);
+            }
+
             // Text fields
             if (!empty($metaMap['short_summary_video_url'])) {
                 $page['short_summary_video_url'] = $metaMap['short_summary_video_url'];
@@ -976,6 +988,10 @@ if (!function_exists('page_details_from_ids')) {
 
             if (!empty($metaMap['short_summary_description'])) {
                 $page['short_summary_description'] = $metaMap['short_summary_description'];
+            }
+
+            if (!empty($metaMap['sku'])) {
+                $page['sku'] = $metaMap['sku'];
             }
         }
 
