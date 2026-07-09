@@ -5,7 +5,7 @@
 
     $breadcrumb_image = $getMeta('breadcrumb_image');
     $breadcrumb_title = $getMeta('breadcrumb_title');
-    $breadcrumb_subtitle = $getMeta('breadcrumb_subtitle');
+    // $breadcrumb_subtitle = $getMeta('breadcrumb_subtitle');
     $breadcrumb_description = $getMeta('breadcrumb_description');
 
     $normalizeTagValues = function ($rawValue) {
@@ -98,12 +98,12 @@
         <input type="text" class="form-control" name="meta[breadcrumb_title]" value="{{ $breadcrumb_title }}" placeholder="Enter breadcrumb title" required>
     </div>
 
-    <div class="col-md-6 form-group mb-2">
+    {{-- <div class="col-md-6 form-group mb-2">
         <label class="form-label">Subtitle <span class="text-danger">*</span></label>
         <input type="text" class="form-control" name="meta[breadcrumb_subtitle]" value="{{ $breadcrumb_subtitle }}" placeholder="Enter breadcrumb subtitle" required>
-    </div>
+    </div> --}}
 
-    <div class="col-md-6 form-group mb-2">
+    <div class="col-md-12 form-group mb-2">
         <label class="form-label">Description <span class="text-danger">*</span></label>
         <input type="text" class="form-control" name="meta[breadcrumb_description]" value="{{ $breadcrumb_description }}" placeholder="Enter breadcrumb description" required>
     </div>
