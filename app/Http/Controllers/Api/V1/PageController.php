@@ -61,8 +61,10 @@ class PageController extends Controller
     public function showById(int $id, Request $request): JsonResponse
     {
         $autofetch = $request->get('autofetch');
+        $occasion = $this->normalizedQueryOccasions($request->get('occasion'));
+        $cacheVariant = $this->buildPagePayloadVariant($occasion);
 
-        $cached = ApiPayloadCache::getCachedPagePayload($id, $autofetch);
+        $cached = ApiPayloadCache::getCachedPagePayload($id, $autofetch, $cacheVariant);
         if ($cached !== null) {
             return response()->json(['data' => $cached]);
         }
@@ -82,8 +84,8 @@ class PageController extends Controller
             ], 404);
         }
 
-        $data = $this->pagePayload($page, $autofetch);
-        ApiPayloadCache::storePagePayload((int) $page->id, $autofetch, $data);
+        $data = $this->pagePayload($page, $autofetch, $occasion);
+        ApiPayloadCache::storePagePayload((int) $page->id, $autofetch, $data, $cacheVariant);
 
         return response()->json(['data' => $data]);
     }
@@ -95,6 +97,8 @@ class PageController extends Controller
     {
         $normalizedSlug = trim($slug, '/');
         $autofetch = $request->get('autofetch');
+        $occasion = $this->normalizedQueryOccasions($request->get('occasion'));
+        $cacheVariant = $this->buildPagePayloadVariant($occasion);
 
         $pageId = Page::query()
             ->where('slug', $normalizedSlug)
@@ -112,7 +116,7 @@ class PageController extends Controller
 
         $pageId = (int) $pageId;
 
-        $cached = ApiPayloadCache::getCachedPagePayload($pageId, $autofetch);
+        $cached = ApiPayloadCache::getCachedPagePayload($pageId, $autofetch, $cacheVariant);
         if ($cached !== null) {
             return response()->json(['data' => $cached]);
         }
@@ -132,8 +136,8 @@ class PageController extends Controller
             ], 404);
         }
 
-        $data = $this->pagePayload($page, $autofetch);
-        ApiPayloadCache::storePagePayload($pageId, $autofetch, $data);
+        $data = $this->pagePayload($page, $autofetch, $occasion);
+        ApiPayloadCache::storePagePayload($pageId, $autofetch, $data, $cacheVariant);
 
         return response()->json(['data' => $data]);
     }
@@ -141,7 +145,7 @@ class PageController extends Controller
     /**
      * Main Payload Builder
      */
-    private function pagePayload(Page $page, $additionalParams = null): array
+    private function pagePayload(Page $page, $additionalParams = null, ?array $queryOccasions = null): array
     {
         $seoMeta = SeoMeta::query()
             ->where('slug', $page->slug)
@@ -178,6 +182,11 @@ class PageController extends Controller
                     $ids = $this->getRelatedProductIdsByOccasions($page);
                     $autofetchSections['related_products'] = page_details_from_ids($ids);
                 }    
+
+                if ($param === 'all_products') {
+                    $ids = $this->getAllProductIdsByOccasions($page, $queryOccasions);
+                    $autofetchSections['all_products'] = page_details_from_ids($ids);
+                }
 
                 // if($param === 'sustainable_products') {
                 //     $ids = Page::query()->whereIn('layout', ['products'])->where('is_active', true)
@@ -455,6 +464,48 @@ class PageController extends Controller
             ->all();
     }
 
+    private function getAllProductIdsByOccasions(Page $page, ?array $occasionOverride = null): array
+    {
+        $currentOccasions = filled($occasionOverride)
+            ? $occasionOverride
+            : $this->normalizedMetaList(
+                $page->meta->firstWhere('meta_key', 'occasions')?->meta_value
+            );
+
+        $query = Page::query()
+            ->with('meta')
+            ->where('layout', 'products')
+            ->where('is_active', true)
+            ->when($page->company_id, function ($query) use ($page) {
+                $query->where('company_id', $page->company_id);
+            });
+
+        if ($currentOccasions === []) {
+            return $query->pluck('id')->toArray();
+        }
+
+        $currentOccasions = array_map('mb_strtolower', $currentOccasions);
+
+        return $query
+            ->get()
+            ->filter(function (Page $product) use ($currentOccasions) {
+                $productOccasions = $this->normalizedMetaList(
+                    $product->meta->firstWhere('meta_key', 'occasions')?->meta_value
+                );
+
+                if ($productOccasions === []) {
+                    return false;
+                }
+
+                $productOccasions = array_map('mb_strtolower', $productOccasions);
+
+                return array_intersect($currentOccasions, $productOccasions) !== [];
+            })
+            ->pluck('id')
+            ->values()
+            ->all();
+    }
+
     private function normalizedMetaList($rawValue): array
     {
         if (!filled($rawValue)) {
@@ -482,5 +533,31 @@ class PageController extends Controller
             ->filter()
             ->values()
             ->all();
+    }
+
+    private function normalizedQueryOccasions($rawValue): array
+    {
+        $occasions = $this->normalizedMetaList($rawValue);
+
+        return array_map(
+            static fn ($value) => mb_strtolower((string) $value),
+            $occasions
+        );
+    }
+
+    private function buildPagePayloadVariant(?array $occasionOverride): string
+    {
+        if (empty($occasionOverride)) {
+            return '';
+        }
+
+        $normalized = array_map(
+            static fn ($value) => trim(mb_strtolower((string) $value)),
+            $occasionOverride
+        );
+        $normalized = array_values(array_filter($normalized, static fn ($value) => $value !== ''));
+        sort($normalized, SORT_STRING);
+
+        return 'occasion=' . implode(',', $normalized);
     }
 }

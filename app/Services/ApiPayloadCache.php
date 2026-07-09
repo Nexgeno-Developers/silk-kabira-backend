@@ -52,6 +52,15 @@ class ApiPayloadCache
         return implode(',', $parts);
     }
 
+    private static function normalizeVariant(?string $raw): string
+    {
+        if ($raw === null) {
+            return '';
+        }
+
+        return trim($raw);
+    }
+
     private static function pageLocalRevisionKey(int $pageId): string
     {
         return self::basePrefix() . ':rev:page:' . $pageId;
@@ -138,12 +147,13 @@ class ApiPayloadCache
         }
     }
 
-    private static function pagePayloadKey(int $pageId, string $autofetchNormalized): string
+    private static function pagePayloadKey(int $pageId, string $autofetchNormalized, string $variantNormalized = ''): string
     {
         $local = self::getIntRevision(self::pageLocalRevisionKey($pageId));
+        $variantTag = $variantNormalized === '' ? '' : ':v:' . hash('sha256', $variantNormalized);
 
         if ($autofetchNormalized === '') {
-            return self::basePrefix() . ':page:' . $pageId . ':r:' . $local;
+            return self::basePrefix() . ':page:' . $pageId . $variantTag . ':r:' . $local;
         }
 
         $afTag = hash('sha256', $autofetchNormalized);
@@ -151,6 +161,7 @@ class ApiPayloadCache
 
         return self::basePrefix()
             . ':page:' . $pageId
+            . $variantTag
             . ':af:' . $afTag
             . ':g:' . $global
             . ':r:' . $local;
@@ -218,9 +229,13 @@ class ApiPayloadCache
     /**
      * @return array<string, mixed>|null  Cached payload, or null if missing / invalid / read error.
      */
-    public static function getCachedPagePayload(int $pageId, ?string $autofetchRaw): ?array
+    public static function getCachedPagePayload(int $pageId, ?string $autofetchRaw, ?string $variantRaw = null): ?array
     {
-        $key = self::pagePayloadKey($pageId, self::normalizeAutofetch($autofetchRaw));
+        $key = self::pagePayloadKey(
+            $pageId,
+            self::normalizeAutofetch($autofetchRaw),
+            self::normalizeVariant($variantRaw)
+        );
 
         return self::getPayloadArray($key);
     }
@@ -228,9 +243,13 @@ class ApiPayloadCache
     /**
      * @param  array<string, mixed>  $payload
      */
-    public static function storePagePayload(int $pageId, ?string $autofetchRaw, array $payload): void
+    public static function storePagePayload(int $pageId, ?string $autofetchRaw, array $payload, ?string $variantRaw = null): void
     {
-        $key = self::pagePayloadKey($pageId, self::normalizeAutofetch($autofetchRaw));
+        $key = self::pagePayloadKey(
+            $pageId,
+            self::normalizeAutofetch($autofetchRaw),
+            self::normalizeVariant($variantRaw)
+        );
         self::storePayloadArray($key, $payload);
     }
 
