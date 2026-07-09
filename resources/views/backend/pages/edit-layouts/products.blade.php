@@ -39,6 +39,7 @@
     $selected_occasions = $normalizeTagValues($getMeta('occasions', ''));
 
     $sku = $getMeta('sku');
+    $product_information_title = $getMeta('product_information_title');
     $description = $getMeta('description');
     $process = $getMeta('process');
     $fabric = $getMeta('fabric');
@@ -49,6 +50,8 @@
     $export = $getMeta('export');
     $amazon_url = $getMeta('amazon_url');
     $ajio_url = $getMeta('ajio_url');
+    $features_title = $getMeta('features_title');
+    $features_subtitle = $getMeta('features_subtitle');
     $features = $getMeta('features');
     $type = $getMeta('type');
 
@@ -113,6 +116,11 @@
     <div class="col-md-12">
         <hr>
         <h4 class="text-primary">Product Information Section</h4>
+    </div>
+
+    <div class="col-md-6 form-group mb-2">
+        <label class="form-label">Title <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" name="meta[product_information_title]" value="{{ $product_information_title }}" placeholder="Enter section title" required>
     </div>
 
     <div class="col-md-6 form-group mb-2">
@@ -182,6 +190,16 @@
     </div>
 
     <div class="col-md-6 form-group mb-2">
+        <label class="form-label">Features Title <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" name="meta[features_title]" value="{{ $features_title }}" placeholder="Enter features title" required>
+    </div>
+
+    <div class="col-md-6 form-group mb-2">
+        <label class="form-label">Features Subtitle <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" name="meta[features_subtitle]" value="{{ $features_subtitle }}" placeholder="Enter features subtitle" required>
+    </div>
+
+    <div class="col-md-12 form-group mb-2">
         <label class="form-label">Features <span class="text-danger">*</span></label>
         <input type="text" class="form-control aiz-tag-input" name="meta[features]" value="{{ $features }}" placeholder="Enter feature tags" required>
     </div>
