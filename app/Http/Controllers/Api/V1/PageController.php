@@ -231,7 +231,7 @@ class PageController extends Controller
                     $autofetchSections['best_seller_products'] = page_details_from_ids($ids);
                 }
                 
-                if($param === 'latest_insights') {
+                if($param === 'latest_blogs') {
                     $categoryId = 1;
                     $postsQuery = Post::query()
                         ->where('is_active', true)
@@ -248,7 +248,7 @@ class PageController extends Controller
 
                     $latestPosts = $postsQuery->get();
 
-                    $autofetchSections['latest_insights'] = $latestPosts->map(function (Post $post) {
+                    $autofetchSections['latest_blogs'] = $latestPosts->map(function (Post $post) {
                         $summary = $post->meta->firstWhere('meta_key', 'short_summary')?->meta_value;
                         if (!filled($summary)) {
                             $summary = $post->meta->firstWhere('meta_key', 'summary')?->meta_value;
