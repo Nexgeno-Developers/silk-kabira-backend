@@ -9,6 +9,7 @@
     $origin_title = $getMeta('origin_title');
     $origin_subtitle = $getMeta('origin_subtitle');
     $origin_description = $getMeta('origin_description');
+    $origin_image = $getMeta('origin_image');
 
     $introduction_title = $getMeta('introduction_title');
     $introduction_subtitle = $getMeta('introduction_subtitle');
@@ -17,6 +18,7 @@
     $craft_title = $getMeta('craft_title');
     $craft_subtitle = $getMeta('craft_subtitle');
     $craft_description = $getMeta('craft_description');
+    $craft_image = $getMeta('craft_image');
 
     $global_presence_title = $getMeta('global_presence_title');
     $global_presence_subtitle = $getMeta('global_presence_subtitle');
@@ -54,6 +56,20 @@
     <div class="col-md-12">
         <hr>
         <h4 class="text-primary">Origin Section</h4>
+    </div>
+
+    <div class="col-md-12">
+        <label class="form-label">Image</label>
+        <div class="form-group mb-2">
+            <div class="input-group" data-toggle="aizuploader" data-type="image" data-multiple="false">
+                <div class="input-group-prepend">
+                    <div class="input-group-text bg-soft-secondary font-weight-medium">{{ __('Browse') }}</div>
+                </div>
+                <div class="form-control file-amount">{{ __('Choose File') }}</div>
+                <input value="{{ $origin_image }}" type="hidden" name="meta[origin_image]" class="selected-files">
+            </div>
+            <div class="file-preview box sm"></div>
+        </div>
     </div>
 
     <div class="col-md-6 form-group mb-2">
@@ -98,6 +114,20 @@
     <div class="col-md-12">
         <hr>
         <h4 class="text-primary">Craft Section</h4>
+    </div>
+
+    <div class="col-md-12">
+        <label class="form-label">Image</label>
+        <div class="form-group mb-2">
+            <div class="input-group" data-toggle="aizuploader" data-type="image" data-multiple="false">
+                <div class="input-group-prepend">
+                    <div class="input-group-text bg-soft-secondary font-weight-medium">{{ __('Browse') }}</div>
+                </div>
+                <div class="form-control file-amount">{{ __('Choose File') }}</div>
+                <input value="{{ $craft_image }}" type="hidden" name="meta[craft_image]" class="selected-files">
+            </div>
+            <div class="file-preview box sm"></div>
+        </div>
     </div>
 
     <div class="col-md-6 form-group mb-2">

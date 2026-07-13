@@ -27,6 +27,8 @@ class PageController extends Controller
         'single_video',
         'multiple_video',
         'image',
+        'origin_image',
+        'craft_image',
     ];
 
     // Post reference keys
