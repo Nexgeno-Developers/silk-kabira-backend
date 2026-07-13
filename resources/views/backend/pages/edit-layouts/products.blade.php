@@ -143,7 +143,7 @@
     <div class="col-md-6">
         <label class="form-label">Product Image <span class="text-danger">*</span></label>
         <div class="form-group mb-2">
-            <div class="input-group" data-toggle="aizuploader" data-type="image" data-multiple="false">
+            <div class="input-group" data-toggle="aizuploader" data-type="image" data-multiple="true">
                 <div class="input-group-prepend">
                     <div class="input-group-text bg-soft-secondary font-weight-medium">{{ __('Browse') }}</div>
                 </div>
