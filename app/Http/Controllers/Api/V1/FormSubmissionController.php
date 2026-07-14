@@ -140,17 +140,18 @@ class FormSubmissionController extends Controller
 
     private function storeOneFile(UploadedFile $file, string $formName, string $companyId): string
     {
-        // Match the intent of ProtectForms middleware.
-        $allowedMimes = [
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'image/jpeg',
-            'image/png',
+        $allowedMimeMap = [
+            'application/pdf' => 'pdf',
+            'application/msword' => 'doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
         ];
 
-        $mimeType = (string) $file->getMimeType();
-        if (!in_array($mimeType, $allowedMimes, true)) {
+        $mimeType = strtolower((string) $file->getMimeType());
+        $extension = $allowedMimeMap[$mimeType] ?? null;
+
+        if ($extension === null) {
             abort(422, 'Disallowed file type');
         }
 
@@ -159,7 +160,6 @@ class FormSubmissionController extends Controller
             abort(422, 'File too large');
         }
 
-        $extension = strtolower($file->getClientOriginalExtension() ?: $file->extension() ?: 'bin');
         $date = date('Y/m');
 
         // Store on the `public` disk and return the storage-relative public path.
