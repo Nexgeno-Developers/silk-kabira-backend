@@ -14,7 +14,7 @@ use App\Http\Controllers\Api\V1\SeoSettingController;
 
 Route::prefix('v1')->middleware(['throttle:60,1'])->group(function () {
     // Menu group (and its active item tree)
-    Route::get('menus/groups/{id}', [MenuController::class, 'showById']);
+    Route::get('menus/groups/{id}', [MenuController::class, 'showById'])->whereNumber('id');
     Route::get('menus/groups/by-name/{name}', [MenuController::class, 'showByName']);
 
     // Company info by company id
