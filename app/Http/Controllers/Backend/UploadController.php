@@ -4,11 +4,10 @@ namespace App\Http\Controllers\Backend;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Upload;
-use App\Models\User;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class UploadController extends Controller
 {
@@ -19,6 +18,24 @@ class UploadController extends Controller
         //Module Name
         $this->moduleName = 'Uploads';
         view()->share('moduleName', $this->moduleName);
+
+        $this->middleware('permission:uploads view')->only([
+            'index',
+            'get_uploaded_files',
+            'get_preview_files',
+            'attachment_download',
+            'file_info',
+        ]);
+        $this->middleware('permission:uploads create')->only([
+            'create',
+            'show_uploader',
+            'upload',
+        ]);
+        $this->middleware('permission:uploads delete')->only([
+            'destroy',
+            'bulk_uploaded_files_delete',
+            'all_file',
+        ]);
     }
 
     public function index(Request $request)
@@ -191,10 +208,10 @@ class UploadController extends Controller
 
     public function destroy($id)
     {
-        $upload = Upload::findOrFail($id);
+        $upload = $this->findAuthorizedUpload($id);
+
         try {
-            unlink(public_path() . '/' . $upload->file_name);
-            $upload->delete();
+            $this->deleteUploadRecord($upload);
             return redirect()->back()->with('success', __('File deleted successfully'));
         } catch (\Exception $e) {
             $upload->delete();
@@ -204,14 +221,17 @@ class UploadController extends Controller
 
     public function bulk_uploaded_files_delete(Request $request)
     {
-        if ($request->id) {
-            foreach ($request->id as $file_id) {
-                $this->destroy($file_id);
+        $ids = $request->input('id', []);
+        if (is_array($ids) && count($ids) > 0) {
+            foreach ($ids as $file_id) {
+                $upload = $this->findAuthorizedUpload((int) $file_id);
+                $this->deleteUploadRecord($upload);
             }
+
             return 1;
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     // public function get_preview_files(Request $request)
@@ -232,14 +252,27 @@ class UploadController extends Controller
 
     public function get_preview_files(Request $request)
     {
-        $ids = explode(',', $request->ids);
-    
-        $ids = array_map('intval', $ids); // ensure all IDs are integers
-        $placeholders = implode(',', array_fill(0, count($ids), '?'));
-        $files = Upload::whereIn('id', $ids)->orderByRaw("FIELD(id, $placeholders)", $ids)->get();        
+        $ids = collect(explode(',', (string) $request->ids))
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->values()
+            ->all();
+
+        if ($ids === []) {
+            return [];
+        }
+
+        $uploadsQuery = Upload::query()->whereIn('id', $ids);
+        $this->applyUploadAccessScope($uploadsQuery);
+        $files = $uploadsQuery->get()->keyBy('id');
     
         $new_file_array = [];
-        foreach ($files as $file) {
+        foreach ($ids as $id) {
+            $file = $files->get($id);
+            if (!$file) {
+                abort(HttpResponse::HTTP_FORBIDDEN, 'You are not allowed to access one or more selected files.');
+            }
+
             $file['file_name'] = my_asset($file->file_name);
             if ($file->external_link) {
                 $file['file_name'] = $file->external_link;
@@ -251,30 +284,24 @@ class UploadController extends Controller
     }
     
 
-    public function all_file()
+    public function all_file(Request $request)
     {
-        $uploads = Upload::all();
-        foreach ($uploads as $upload) {
-            try {
-                unlink(public_path() . '/' . $upload->file_name);
-                $upload->delete();
+        abort_unless($request->isMethod('post'), HttpResponse::HTTP_METHOD_NOT_ALLOWED);
+        abort_unless($this->isSuperAdmin(), HttpResponse::HTTP_FORBIDDEN);
 
-                flash(__('File deleted successfully'))->success();
-            } catch (\Exception $e) {
-                $upload->delete();
-                flash(__('File deleted successfully'))->success();
-            }
+        $uploads = Upload::query()->get();
+        foreach ($uploads as $upload) {
+            $this->deleteUploadRecord($upload);
         }
 
-        Upload::query()->truncate();
-
+        flash(__('Files deleted successfully'))->success();
         return back();
     }
 
     //Download project attachment
     public function attachment_download($id)
     {
-        $project_attachment = Upload::find($id);
+        $project_attachment = $this->findAuthorizedUpload($id);
         try {
             $file_path = public_path($project_attachment->file_name);
             return Response::download($file_path);
@@ -286,7 +313,7 @@ class UploadController extends Controller
     //Download project attachment
     public function file_info(Request $request)
     {
-        $file = Upload::findOrFail($request['id']);
+        $file = $this->findAuthorizedUpload((int) $request['id']);
         return view('backend.uploads.info', compact('file'));
     }
 
@@ -311,5 +338,40 @@ class UploadController extends Controller
             'status' => 'success',
             'message' => 'Thumbnails regenerated for all existing images.'
         ]);
-    }    
+    }
+
+    private function isSuperAdmin(): bool
+    {
+        return (int) auth()->user()?->role_id === 1;
+    }
+
+    private function applyUploadAccessScope($query): void
+    {
+        if (! $this->isSuperAdmin()) {
+            $query->whereIn('user_id', [auth()->id(), 1]);
+        }
+    }
+
+    private function findAuthorizedUpload(int $id): Upload
+    {
+        $query = Upload::query()->where('id', $id);
+        $this->applyUploadAccessScope($query);
+
+        $upload = $query->first();
+        if (! $upload) {
+            abort(HttpResponse::HTTP_FORBIDDEN, 'You are not allowed to access this file.');
+        }
+
+        return $upload;
+    }
+
+    private function deleteUploadRecord(Upload $upload): void
+    {
+        $publicFilePath = public_path($upload->file_name);
+        if (is_file($publicFilePath)) {
+            @unlink($publicFilePath);
+        }
+
+        $upload->delete();
+    }
 }

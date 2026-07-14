@@ -89,9 +89,8 @@ Route::prefix('backend')->group(function () {
     Route::middleware(['auth.backend'])->resource('/uploaded-files', UploadController::class);
     Route::middleware(['auth.backend'])->controller(UploadController::class)->group(function () {
         Route::any('/uploaded-files/file-info', 'file_info')->name('uploaded-files.info');
-        Route::get('/uploaded-files/destroy/{id}', 'destroy')->name('uploaded-files.destroy');
         Route::post('/bulk-uploaded-files-delete', 'bulk_uploaded_files_delete')->name('bulk-uploaded-files-delete');
-        Route::get('/all-file', 'all_file');
+        Route::post('/all-file', 'all_file')->name('uploaded-files.delete-all');
         Route::post('/aiz-uploader', 'show_uploader');
         Route::post('/aiz-uploader/upload', 'upload');
         Route::get('/aiz-uploader/get-uploaded-files', 'get_uploaded_files');

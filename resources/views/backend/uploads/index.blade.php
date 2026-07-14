@@ -93,10 +93,10 @@
                                                 <li><a href="javascript:void(0)" class="dropdown-item" onclick="copyUrl(this)" data-url="{{ my_asset($file->file_name) }}">
                                                     <i class="las la-clipboard me-2"></i>{{ __('Copy Link') }}</a></li>
                                                     <li>
-                                                        <a href="javascript:void(0)" 
-                                                        class="dropdown-item confirm-delete" 
-                                                        data-href="{{ route('uploaded-files.destroy', $file->id) }}" 
-                                                        data-bs-toggle="modal" 
+                                                        <a href="javascript:void(0)"
+                                                        class="dropdown-item confirm-delete"
+                                                        data-href="{{ route('uploaded-files.destroy', $file->id) }}"
+                                                        data-bs-toggle="modal"
                                                         data-bs-target="#delete-modal">
                                                             <i class="las la-trash me-2"></i>{{ __('Delete') }}
                                                         </a>
@@ -170,7 +170,11 @@
                 <div class="modal-body text-center">
                     <p class="mt-1 fs-14">{{ __('Are you sure to delete this?') }}</p>
                     <button type="button" class="btn btn-secondary rounded-0 mt-2" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-                    <a href="" id="delete-link" class="btn btn-primary rounded-0 mt-2">{{ __('Delete') }}</a>
+                    <form id="delete-form" method="POST" action="" class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" id="delete-link" class="btn btn-primary rounded-0 mt-2">{{ __('Delete') }}</button>
+                    </form>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -259,6 +263,10 @@
 			}
 		});
 	}
+
+    $(document).on('click', '.confirm-delete', function () {
+        $('#delete-form').attr('action', $(this).data('href'));
+    });
     
 </script>
 @endsection
