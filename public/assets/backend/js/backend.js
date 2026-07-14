@@ -15,6 +15,52 @@ toastr.options = {
     hideMethod: "fadeOut",              // Toast fades out when dismissed.
 };
 
+function showUploaderErrorMessage(message) {
+    var safeMessage = message || 'Upload failed.';
+
+    if (typeof AIZ !== 'undefined' && AIZ.plugins && typeof AIZ.plugins.notify === 'function') {
+        AIZ.plugins.notify('danger', safeMessage);
+    }
+
+    toastr.error(safeMessage, 'Alert');
+}
+
+$(document).ajaxError(function (event, xhr, settings) {
+    if (!settings || !settings.url || settings.url.indexOf('/aiz-uploader/upload') === -1) {
+        return;
+    }
+
+    var response = xhr.responseJSON || {};
+    var message = response.message || '';
+
+    if (!message && response.errors) {
+        $.each(response.errors, function (key, msgs) {
+            if (Array.isArray(msgs) && msgs.length) {
+                message = msgs[0];
+                return false;
+            }
+
+            if (msgs) {
+                message = msgs;
+                return false;
+            }
+        });
+    }
+
+    showUploaderErrorMessage(message || 'Upload failed. Please check the file type and size.');
+});
+
+$(document).ajaxSuccess(function (event, xhr, settings) {
+    if (!settings || !settings.url || settings.url.indexOf('/aiz-uploader/upload') === -1) {
+        return;
+    }
+
+    var response = xhr.responseJSON || null;
+    if (response && response.status === false) {
+        showUploaderErrorMessage(response.message || 'Upload failed.');
+    }
+});
+
 
 //bootstarp modals
 function largeModal(url, header) {

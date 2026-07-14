@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Upload;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class UploadController extends Controller
@@ -96,74 +96,88 @@ class UploadController extends Controller
     }
     public function upload(Request $request)
     {
-        $type = array(
-            "jpg" => "image",
-            "jpeg" => "image",
-            "png" => "image",
-            "svg" => "image",
-            "webp" => "image",
-            "gif" => "image",
-            "mp4" => "video",
-            "mpg" => "video",
-            "mpeg" => "video",
-            "webm" => "video",
-            "ogg" => "video",
-            "avi" => "video",
-            "mov" => "video",
-            "flv" => "video",
-            "swf" => "video",
-            "mkv" => "video",
-            "wmv" => "video",
-            "wma" => "audio",
-            "aac" => "audio",
-            "wav" => "audio",
-            "mp3" => "audio",
-            "zip" => "archive",
-            "rar" => "archive",
-            "7z" => "archive",
-            "doc" => "document",
-            "txt" => "document",
-            "docx" => "document",
-            "pdf" => "document",
-            "csv" => "document",
-            "xml" => "document",
-            "ods" => "document",
-            "xlr" => "document",
-            "xls" => "document",
-            "xlsx" => "document"
+        $allowedMimeMap = [
+            'image/jpeg' => ['extension' => 'jpg', 'type' => 'image'],
+            'image/png' => ['extension' => 'png', 'type' => 'image'],
+            'image/webp' => ['extension' => 'webp', 'type' => 'image'],
+            'image/gif' => ['extension' => 'gif', 'type' => 'image'],
+            'video/mp4' => ['extension' => 'mp4', 'type' => 'video'],
+            'video/quicktime' => ['extension' => 'mov', 'type' => 'video'],
+            'video/x-msvideo' => ['extension' => 'avi', 'type' => 'video'],
+            'video/webm' => ['extension' => 'webm', 'type' => 'video'],
+            'video/x-matroska' => ['extension' => 'mkv', 'type' => 'video'],
+            'audio/mpeg' => ['extension' => 'mp3', 'type' => 'audio'],
+            'audio/wav' => ['extension' => 'wav', 'type' => 'audio'],
+            'audio/x-wav' => ['extension' => 'wav', 'type' => 'audio'],
+            'audio/aac' => ['extension' => 'aac', 'type' => 'audio'],
+            'application/pdf' => ['extension' => 'pdf', 'type' => 'document'],
+            'text/plain' => ['extension' => 'txt', 'type' => 'document'],
+            'text/csv' => ['extension' => 'csv', 'type' => 'document'],
+            'application/msword' => ['extension' => 'doc', 'type' => 'document'],
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => ['extension' => 'docx', 'type' => 'document'],
+            'application/vnd.ms-excel' => ['extension' => 'xls', 'type' => 'document'],
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => ['extension' => 'xlsx', 'type' => 'document'],
+            'application/zip' => ['extension' => 'zip', 'type' => 'archive'],
+            'application/x-zip-compressed' => ['extension' => 'zip', 'type' => 'archive'],
+            'application/x-rar-compressed' => ['extension' => 'rar', 'type' => 'archive'],
+            'application/x-7z-compressed' => ['extension' => '7z', 'type' => 'archive'],
+        ];
+
+        $validator = Validator::make($request->all(), [
+            'aiz_file' => 'required|file|max:10240|mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx,xls,xlsx,csv,txt,mp4,mov,avi,webm,mkv,mp3,wav,aac,zip,rar,7z',
+        ]);
+
+        if ($validator->fails()) {
+            $message = $validator->errors()->first('aiz_file') ?: 'Invalid file upload.';
+
+            return response()->json([
+                'status' => false,
+                'message' => $message,
+                'notification' => [
+                    'aiz_file' => [$message],
+                ],
+                'errors' => [
+                    'aiz_file' => [$message],
+                ],
+            ], HttpResponse::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $file = $request->file('aiz_file');
+        $detectedMime = strtolower((string) $file->getMimeType());
+        $mimeConfig = $allowedMimeMap[$detectedMime] ?? null;
+
+        if ($mimeConfig === null) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Unsupported file type.',
+                'notification' => [
+                    'aiz_file' => ['Unsupported file type.'],
+                ],
+                'errors' => [
+                    'aiz_file' => ['Unsupported file type.'],
+                ],
+            ], HttpResponse::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $upload = new Upload;
+        $upload->file_original_name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+        $size = $file->getSize();
+        $schoolId = 'media';
+        $path = $file->storeAs(
+            'uploads/' . $schoolId . '/' . date("Y") . '/' . date("m"),
+            uniqid('', true) . '.' . $mimeConfig['extension'],
+            'public'
         );
 
-        if ($request->hasFile('aiz_file')) {
-            $upload = new Upload;
-            $extension = strtolower($request->file('aiz_file')->getClientOriginalExtension());
+        $upload->extension = $mimeConfig['extension'];
+        $upload->file_name = 'storage/' . $path;
+        $upload->user_id = Auth::user()->id;
+        $upload->type = $mimeConfig['type'];
+        $upload->file_size = $size;
+        $upload->save();
 
-            if (isset($type[$extension])) {
-                $upload->file_original_name = null;
-                $arr = explode('.', $request->file('aiz_file')->getClientOriginalName());
-                for ($i = 0; $i < count($arr) - 1; $i++) {
-                    if ($i == 0) {
-                        $upload->file_original_name .= $arr[$i];
-                    } else {
-                        $upload->file_original_name .= "." . $arr[$i];
-                    }
-                }
-
-                $size = $request->file('aiz_file')->getSize();
-                $schoolId = 'media';
-                $path = $request->file('aiz_file')->store('uploads/'.$schoolId.'/'.date("Y").'/'.date("m"), 'public');                
-
-                $upload->extension = $extension;
-                $upload->file_name = 'storage/'.$path;
-                $upload->user_id = Auth::user()->id;
-                $upload->type = $type[$upload->extension];
-                $upload->file_size = $size;
-                $upload->save();
-
-                // makeImageThumbnail($upload->file_name, 150, 150);
-                // makeImageThumbnail($upload->file_name, 300, 300);                
-            }
-            return '{}';
-        }
+        return '{}';
     }
 
     public function get_uploaded_files(Request $request)
