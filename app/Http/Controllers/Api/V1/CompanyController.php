@@ -40,6 +40,20 @@ class CompanyController extends Controller
 
         $companyIdAsInt = (int) $id;
 
+        $isActive = Company::query()
+            ->where('id', $companyIdAsInt)
+            ->where('is_active', true)
+            ->exists();
+
+        if (! $isActive) {
+            return response()->json([
+                'error' => [
+                    'message' => 'Company not found',
+                    'code' => 'COMPANY_NOT_FOUND',
+                ],
+            ], 404);
+        }
+
         // Optional security: if the client is authenticated and is tied to a company,
         // only allow fetching that company.
         if (Auth::check()) {
@@ -63,6 +77,7 @@ class CompanyController extends Controller
         $company = Company::query()
             ->with('meta')
             ->where('id', $companyIdAsInt)
+            ->where('is_active', true)
             ->first();
 
         if (!$company) {

@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use App\Models\Role;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class UserController extends BaseController
 {
@@ -73,7 +74,7 @@ class UserController extends BaseController
             'role_id' => 'required|exists:roles,id',
             'name' => 'required|string|min:3|max:200',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
+            'password' => ['required', 'string', $this->passwordRules()],
             'is_active' => 'required|boolean',
         ]);
     
@@ -131,7 +132,7 @@ class UserController extends BaseController
             'role_id' => 'required|exists:roles,id',
             'name' => 'required|string|min:3|max:200',
             'email' => 'required|email|unique:users,email,' . $id,
-            'password' => 'nullable|string|min:6',
+            'password' => ['nullable', 'string', $this->passwordRules()],
             'is_active' => 'required|boolean',
         ]);
     
@@ -180,5 +181,15 @@ class UserController extends BaseController
             // Redirect back with an error message
             return redirect()->route($this->module . 'index')->with('error', __('messages.failed'));
         }
+    }
+
+    private function passwordRules(): PasswordRule
+    {
+        return PasswordRule::min(12)
+            ->letters()
+            ->mixedCase()
+            ->numbers()
+            ->symbols()
+            ->uncompromised();
     }
 }
