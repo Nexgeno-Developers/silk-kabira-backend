@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Jobs\TrackVisitorHit;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\Visitor;
 use Illuminate\Support\Facades\Cache;
 use Jenssegers\Agent\Agent;
 use Illuminate\Support\Str;
@@ -23,11 +23,16 @@ class TrackVisitors
             return $next($request);
         }
 
-        //$cacheKey = 'visitor_' . md5($request->ip() . '_' . $request->userAgent() . '_' . $request->path());
-        $cacheKey = 'visitor_' . md5($request->ip() . '_' . $request->userAgent());
+        $cacheKey = 'visitor_' . md5(
+            implode('|', [
+                (string) $request->ip(),
+                (string) $request->userAgent(),
+                (string) $request->path(),
+            ])
+        );
 
         if (!Cache::has($cacheKey)) {
-            $this->trackVisitor($request);
+            TrackVisitorHit::dispatch($this->visitorPayload($request))->afterResponse();
 
             // Store visit cache key
             Cache::put($cacheKey, true, now()->addMinutes(config('custom.cache_minutes')));
@@ -74,23 +79,23 @@ class TrackVisitors
         ];
 
         return \Str::contains($request->path(), $skipPatterns);
-    }    
+    }
 
-    protected function trackVisitor(Request $request): void
+    protected function visitorPayload(Request $request): array
     {
         $agent = new Agent();
-        
-        Visitor::create([
-            'ip_address' => $request->ip(),
+
+        return [
+            'ip_address' => $this->anonymizeIp((string) $request->ip()),
             'user_agent' => $request->userAgent(),
-            'url' => $request->fullUrl(),
+            'url' => $request->url(),
             'method' => $request->method(),
-            'referrer' => $request->header('referer'),
+            'referrer' => $this->sanitizeReferrer($request->header('referer')),
             'device_type' => $this->getDeviceType($agent),
             'browser' => $agent->browser(),
             'platform' => $agent->platform(),
             'company_id' => config('custom.company_id'),
-        ]);
+        ];
     }
 
     protected function getDeviceType(Agent $agent): string
@@ -106,5 +111,40 @@ class TrackVisitors
         }
 
         return 'unknown';
+    }
+
+    protected function sanitizeReferrer(?string $referrer): ?string
+    {
+        if (!filled($referrer)) {
+            return null;
+        }
+
+        $parts = parse_url($referrer);
+        if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
+            return null;
+        }
+
+        $path = $parts['path'] ?? '';
+
+        return $parts['scheme'] . '://' . $parts['host'] . $path;
+    }
+
+    protected function anonymizeIp(string $ip): string
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            $segments = explode('.', $ip);
+            $segments[3] = '0';
+
+            return implode('.', $segments);
+        }
+
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $segments = explode(':', $ip);
+            $segments = array_pad($segments, 8, '0');
+
+            return implode(':', array_slice($segments, 0, 4)) . '::';
+        }
+
+        return $ip;
     }
 }

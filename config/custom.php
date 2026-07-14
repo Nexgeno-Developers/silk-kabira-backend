@@ -21,4 +21,5 @@ return [
     'frontend_url' => env('FRONTEND_URL'),
     'frontend_sitemap_generate_url' => env('FRONTEND_SITEMAP_GENERATE_URL'),
     'frontend_robots_generate_url' => env('FRONTEND_ROBOTS_GENERATE_URL'),
+    'visitor_retention_days' => env('VISITOR_RETENTION_DAYS', 90),
 ];

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Page;
+use App\Models\PageMeta;
 use App\Models\Post;
 use App\Models\SeoMeta;
 use App\Services\ApiPayloadCache;
@@ -439,31 +440,7 @@ class PageController extends Controller
 
         $currentOccasions = array_map('mb_strtolower', $currentOccasions);
 
-        return Page::query()
-            ->with('meta')
-            ->where('layout', 'products')
-            ->where('is_active', true)
-            ->where('id', '!=', $page->id)
-            ->when($page->company_id, function ($query) use ($page) {
-                $query->where('company_id', $page->company_id);
-            })
-            ->get()
-            ->filter(function (Page $product) use ($currentOccasions) {
-                $productOccasions = $this->normalizedMetaList(
-                    $product->meta->firstWhere('meta_key', 'occasions')?->meta_value
-                );
-
-                if ($productOccasions === []) {
-                    return false;
-                }
-
-                $productOccasions = array_map('mb_strtolower', $productOccasions);
-
-                return array_intersect($currentOccasions, $productOccasions) !== [];
-            })
-            ->pluck('id')
-            ->values()
-            ->all();
+        return $this->findProductIdsByOccasions($page, $currentOccasions, true);
     }
 
     private function getAllProductIdsByOccasions(Page $page, ?array $occasionOverride = null): array
@@ -488,22 +465,51 @@ class PageController extends Controller
 
         $currentOccasions = array_map('mb_strtolower', $currentOccasions);
 
-        return $query
+        return $this->findProductIdsByOccasions($page, $currentOccasions, false);
+    }
+
+    private function findProductIdsByOccasions(Page $page, array $occasions, bool $excludeCurrentPage): array
+    {
+        $normalizedOccasions = array_values(array_unique(array_filter(array_map(
+            static fn ($value) => trim(mb_strtolower((string) $value)),
+            $occasions
+        ))));
+
+        if ($normalizedOccasions === []) {
+            return [];
+        }
+
+        $candidateMetaQuery = PageMeta::query()
+            ->select(['page_id', 'meta_value'])
+            ->where('meta_key', 'occasions')
+            ->whereHas('page', function ($query) use ($page, $excludeCurrentPage) {
+                $query->where('layout', 'products')
+                    ->where('is_active', true)
+                    ->when($excludeCurrentPage, function ($query) use ($page) {
+                        $query->where('id', '!=', $page->id);
+                    })
+                    ->when($page->company_id, function ($query) use ($page) {
+                        $query->where('company_id', $page->company_id);
+                    });
+            })
+            ->where(function ($query) use ($normalizedOccasions) {
+                foreach ($normalizedOccasions as $occasion) {
+                    $query->orWhereRaw('LOWER(meta_value) LIKE ?', ['%' . $occasion . '%']);
+                }
+            });
+
+        return $candidateMetaQuery
             ->get()
-            ->filter(function (Page $product) use ($currentOccasions) {
-                $productOccasions = $this->normalizedMetaList(
-                    $product->meta->firstWhere('meta_key', 'occasions')?->meta_value
+            ->filter(function (PageMeta $meta) use ($normalizedOccasions) {
+                $productOccasions = array_map(
+                    'mb_strtolower',
+                    $this->normalizedMetaList($meta->meta_value)
                 );
 
-                if ($productOccasions === []) {
-                    return false;
-                }
-
-                $productOccasions = array_map('mb_strtolower', $productOccasions);
-
-                return array_intersect($currentOccasions, $productOccasions) !== [];
+                return $productOccasions !== [] && array_intersect($normalizedOccasions, $productOccasions) !== [];
             })
-            ->pluck('id')
+            ->pluck('page_id')
+            ->unique()
             ->values()
             ->all();
     }
