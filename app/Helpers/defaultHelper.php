@@ -148,10 +148,10 @@ if (!function_exists('getPageLayouts')) {
                 'label' => 'Default',
                 'description' => 'Standard content layout.',
             ],
-            'example' => [
-                'label' => 'Example',
-                'description' => 'Example layout to demonstrate layout structure and fields.',
-            ],            
+            // 'example' => [
+            //     'label' => 'Example',
+            //     'description' => 'Example layout to demonstrate layout structure and fields.',
+            // ],            
             'home' => [
                 'label' => 'Home',
                 'description' => 'Homepage layout for the website.',

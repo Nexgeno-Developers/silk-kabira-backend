@@ -200,8 +200,8 @@
     </div>
 
     <div class="col-md-6 form-group mb-2">
-        <label class="form-label">Ajio Url <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" name="meta[ajio_url]" value="{{ $ajio_url }}" placeholder="https://www.ajio.com/..." required>
+        <label class="form-label">ETSY Url <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" name="meta[ajio_url]" value="{{ $ajio_url }}" placeholder="https://www.etsy.com/..." required>
     </div>
 
     <div class="col-md-6 form-group mb-2">
