@@ -321,7 +321,7 @@
     </div>
 
     <div class="col-md-4 form-group mb-2">
-        <label class="form-label">Ajio Url <span class="text-danger">*</span></label>
+        <label class="form-label">ETSY Url <span class="text-danger">*</span></label>
         <input type="text" class="form-control" name="meta[partners_ajio_url]" value="{{ $partners_ajio_url }}" placeholder="https://www.ajio.com/..." required>
     </div>
 </div>
